@@ -53,6 +53,7 @@ namespace AZURE_BLOB_STORAGE_API.Controllers
                 return NotFound("Arquivo não encontrado.");
             }
         }
+
         [HttpDelete("delete/{nomeArquivo}")]
         public IActionResult Delete(string nomeArquivo)
         {
@@ -61,6 +62,25 @@ namespace AZURE_BLOB_STORAGE_API.Controllers
 
             blob.DeleteIfExists();
             return NoContent();
+        }
+
+        [HttpGet("listar")]
+        public IActionResult Listar()
+        {
+            List<BlobDto> blobs = [];
+            BlobContainerClient containerClient = new(_connectionString, _containerName);
+
+            foreach (var blob in containerClient.GetBlobs())
+            {
+                blobs.Add(new BlobDto
+                {
+                    Nome = blob.Name,
+                    Tipo = blob.Properties.ContentType,
+                    Url = containerClient.Uri.AbsoluteUri + "/" + blob.Name
+                });
+            }
+
+            return Ok(blobs);
         }
     }
 }
