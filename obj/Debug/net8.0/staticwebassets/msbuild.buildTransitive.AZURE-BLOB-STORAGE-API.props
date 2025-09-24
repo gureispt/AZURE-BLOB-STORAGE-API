@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\AZURE-BLOB-STORAGE-API.props" />
+</Project>
