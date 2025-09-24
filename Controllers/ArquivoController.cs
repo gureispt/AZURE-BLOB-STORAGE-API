@@ -22,6 +22,7 @@ namespace AZURE_BLOB_STORAGE_API.Controllers
             _containerName = configuration["BlobContainerName"];
         }
 
+        [HttpPost("upload")]
         public IActionResult Upload(IFormFile arquivo)
         {
             BlobContainerClient containerClient = new(_connectionString, _containerName);
@@ -31,9 +32,35 @@ namespace AZURE_BLOB_STORAGE_API.Controllers
             using var data = arquivo.OpenReadStream();
             blob.Upload(data, new BlobUploadOptions
             {
-                HttpHeaders = new BlobHttpHeaders {ContentType = arquivo.ContentType }
+                HttpHeaders = new BlobHttpHeaders { ContentType = arquivo.ContentType }
             });
             return Ok(blob.Uri.ToString());
+        }
+
+        [HttpGet("download/{nomeArquivo}")]
+        public IActionResult Download(string nomeArquivo)
+        {
+            BlobContainerClient containerClient = new(_connectionString, _containerName);
+            BlobClient blob = containerClient.GetBlobClient(nomeArquivo);
+
+            if (blob.Exists())
+            {
+                var retorno = blob.DownloadContent();
+                return File(retorno.Value.Content.ToArray(), retorno.Value.Details.ContentType, blob.Name);
+            }
+            else
+            {
+                return NotFound("Arquivo não encontrado.");
+            }
+        }
+        [HttpDelete("delete/{nomeArquivo}")]
+        public IActionResult Delete(string nomeArquivo)
+        {
+            BlobContainerClient containerClient = new(_connectionString, _containerName);
+            BlobClient blob = containerClient.GetBlobClient(nomeArquivo);
+
+            blob.DeleteIfExists();
+            return NoContent();
         }
     }
 }
